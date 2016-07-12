@@ -40,18 +40,34 @@ class RequestBuilder
      * @param mixed $params
      *
      * @return Request
+     * @throws \InvalidArgumentException
      */
     public function build($api, $version, $params = null)
     {
-        
+        $paramsJson = $this->getParamJson($params);
+        $timestamp = $this->getTimestamp();
+        $header = [
+            "Content-Type" => "application/x-www-form-urlencoded",
+            $this->config->getAppKeyFieldName() => $this->credential->getAppKey(),
+            $this->config->getAppMarketIdFieldName() => $this->config->getAppMarketIdValue(),
+            $this->config->getAppVersionFieldName() => $this->config->getAppVersionValue(),
+            $this->config->getDeviceIdFieldName() => $this->getDeviceId(),
+            $this->config->getSessionIdFieldName() => $this->credential->getSessionId(),
+            $this->config->getSignFieldName() => $this->getSign($api, $version, $paramsJson, $timestamp)
+
+        ];
+        return new Request(Constant::DEFAULT_HTTP_METHOD, $this->getGatewayUrl(), $header,
+            $this->getPostBody($api, $version, $paramsJson, $timestamp));
     }
 
     /**
+     * Get mac address of physical net interface
+     * @todo windows support
      * @return string
      */
     protected function getDeviceId()
     {
-
+        return exec("/sbin/ip addr|/bin/grep link/ether | /bin/awk '{print $2}'");
     }
 
     /**
@@ -59,31 +75,44 @@ class RequestBuilder
      */
     protected function getGatewayUrl()
     {
-
+        $scheme = $this->config->isDisableSSL() ? "http" : "https";
+        return "$scheme://" . $this->config->getGatewayHost() . $this->config->getGatewayPath();
     }
 
     /**
+     * @param mixed $obj
      * @return string
      */
-    protected function getParamJson()
+    protected function getParamJson($obj)
     {
-
+        return json_encode($obj);
     }
 
     /**
+     * @param string $api
+     * @param string $version
+     * @param string $paramsJson
+     * @param string $timestamp
      * @return string
      */
-    protected function getPostBody()
+    protected function getPostBody($api, $version, $paramsJson, $timestamp)
     {
-
+        return $this->config->getApiFieldName() . "=" . $api
+            . "&" . $this->config->getVersionFieldName() . "=" . $version
+            . "&" . $this->config->getParamsFieldName() . "=" . $paramsJson
+            . "&" . $this->config->getTimestampFieldName() . "=" . $timestamp;
     }
 
     /**
+     * @param string $api
+     * @param string $version
+     * @param string $paramsJson
+     * @param string $timestamp
      * @return string
      */
-    protected function getSign()
+    protected function getSign($api, $version, $paramsJson, $timestamp)
     {
-
+        return md5($this->credential->getSecret() . $api . $version . $paramsJson . $timestamp);
     }
 
     /**
