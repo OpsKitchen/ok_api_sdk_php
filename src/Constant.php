@@ -11,6 +11,7 @@ namespace OK\ApiSdk;
 
 class Constant
 {
+    const DEFAULT_GATEWAY_PATH = "/gw/json";
     const DEFAULT_HTTP_METHOD = "POST";
     const APP_KEY_FIELD_NAME = "OA-App-Key";
     const APP_VERSION_FIELD_NAME = "OA-App-Version";
@@ -21,5 +22,5 @@ class Constant
     const API_FIELD_NAME = "api";
     const PARAMS_FIELD_NAME = "params";
     const TIMESTAMP_FIELD_NAME = "timestamp";
-    const VERSION_FIELD_NAME = "verison";
+    const VERSION_FIELD_NAME = "version";
 }

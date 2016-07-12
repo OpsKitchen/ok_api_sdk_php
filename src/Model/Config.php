@@ -27,6 +27,11 @@ class Config
     /**
      * @var string
      */
+    protected $gatewayPath = Constant::DEFAULT_GATEWAY_PATH;
+
+    /**
+     * @var string
+     */
     protected $httpMethod = Constant::DEFAULT_HTTP_METHOD;
 
     //System parameter name in HTTP header
@@ -125,6 +130,24 @@ class Config
     public function setGatewayHost($gatewayHost)
     {
         $this->gatewayHost = $gatewayHost;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getGatewayPath()
+    {
+        return $this->gatewayPath;
+    }
+
+    /**
+     * @param string $gatewayPath
+     * @return Config
+     */
+    public function setGatewayPath($gatewayPath)
+    {
+        $this->gatewayPath = $gatewayPath;
         return $this;
     }
 
