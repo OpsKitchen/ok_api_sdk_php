@@ -85,7 +85,7 @@ class Logger implements LoggerInterface
         if (!$fp = fopen($this->logPath, 'a')) {
             return false;
         }
-        $message = "[".$level."]: ".$content;
+        $message = "[".$level."]: ".$content."\n";
         flock($fp, LOCK_EX);
         fwrite($fp, $message);
         flock($fp, LOCK_UN);
