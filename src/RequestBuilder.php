@@ -61,11 +61,13 @@ class RequestBuilder
     }
 
     /**
+     * Get mac address of physical net interface
+     * @todo windows support
      * @return string
      */
     protected function getDeviceId()
     {
-        return "device_id";
+        return exec("/sbin/ip addr|/bin/grep link/ether | /bin/awk '{print $2}'");
     }
 
     /**
