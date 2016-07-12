@@ -22,4 +22,9 @@ class Constant
     const PARAMS_FIELD_NAME = "params";
     const TIMESTAMP_FIELD_NAME = "timestamp";
     const VERSION_FIELD_NAME = "verison";
+    
+    const DEFAULT_LOG_PATH = "/var/log/ok_api_sdk_php.log";
+    
+    const TRACE_FILE = "file";
+    const TRACE_LINE = "line";
 }
