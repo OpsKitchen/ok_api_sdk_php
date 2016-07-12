@@ -8,21 +8,20 @@
 
 namespace OK\ApiSdk\Di\Logger;
 
-use Phalcon\Logger;
 
 interface LoggerInterface
 {
-    const DEBUG = Logger::DEBUG;
+    const DEBUG = "DEBUG";
 
-    const INFO = Logger::INFO;
+    const INFO = "INFO";
 
-    const WARN = Logger::WARNING;
+    const WARN = "WARN";
 
-    const ERROR = Logger::ERROR;
+    const ERROR = "ERROR";
 
-    const FATAL = Logger::CRITICAL;
+    const FATAL = "FATAL";
 
-    const PANIC = Logger::EMERGENCY;
+    const PANIC = "PANIC";
 
     /**
      * @param string $content

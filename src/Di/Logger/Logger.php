@@ -9,24 +9,13 @@
 namespace OK\ApiSdk\Di\Logger;
 
 use OK\ApiSdk\Constant;
-use Phalcon\Logger\Adapter\File as FileLogger;
 
 class Logger implements LoggerInterface
 {
     /**
      * @var string
      */
-    protected $file;
-
-    /**
-     * @var string
-     */
-    protected $line;
-
-    /**
-     * @var FileLogger
-     */
-    protected $fileLogger;
+    protected $logPath;
 
     /**
      * Logger constructor.
@@ -34,10 +23,7 @@ class Logger implements LoggerInterface
      */
     public function __construct($logPath = Constant::DEFAULT_LOG_PATH)
     {
-        $caller = debug_backtrace()[0];
-        $this->file = $caller[Constant::TRACE_FILE];
-        $this->line = $caller[Constant::TRACE_LINE];
-        $this->fileLogger = new FileLogger($logPath);
+        $this->logPath = $logPath;
     }
 
     /**
@@ -45,7 +31,7 @@ class Logger implements LoggerInterface
      */
     public function debug($content)
     {
-        $this->fileLogger->log("$content  [printed by $this->file line $this->line]", LoggerInterface::DEBUG);
+        $this->writeLog($content, LoggerInterface::DEBUG);
     }
 
     /**
@@ -53,7 +39,7 @@ class Logger implements LoggerInterface
      */
     public function info($content)
     {
-        $this->fileLogger->log("$content  [printed by $this->file line $this->line]", LoggerInterface::INFO);
+        $this->writeLog($content, LoggerInterface::INFO);
     }
 
     /**
@@ -61,7 +47,7 @@ class Logger implements LoggerInterface
      */
     public function warn($content)
     {
-        $this->fileLogger->log("$content  [printed by $this->file line $this->line]", LoggerInterface::WARN);
+        $this->writeLog($content, LoggerInterface::WARN);
     }
 
     /**
@@ -69,7 +55,7 @@ class Logger implements LoggerInterface
      */
     public function error($content)
     {
-        $this->fileLogger->log("$content  [printed by $this->file line $this->line]", LoggerInterface::ERROR);
+        $this->writeLog($content, LoggerInterface::ERROR);
     }
 
     /**
@@ -77,7 +63,7 @@ class Logger implements LoggerInterface
      */
     public function fatal($content)
     {
-        $this->fileLogger->log("$content  [printed by $this->file line $this->line]", LoggerInterface::FATAL);
+        $this->writeLog($content, LoggerInterface::FATAL);
         exit;
     }
 
@@ -86,7 +72,25 @@ class Logger implements LoggerInterface
      */
     public function panic($content)
     {
-        $this->fileLogger->log("$content  [printed by $this->file line $this->line]", LoggerInterface::PANIC);
-        exit;
+        $this->writeLog($content, LoggerInterface::PANIC);
+    }
+
+    /**
+     * @param string $content
+     * @param string $level
+     * @return bool
+     */
+    final protected function writeLog($content, $level = LoggerInterface::DEBUG)
+    {
+        if (!$fp = fopen($this->logPath, 'a')) {
+            return false;
+        }
+        $message = "[".$level."]: ".$content;
+        flock($fp, LOCK_EX);
+        fwrite($fp, $message);
+        flock($fp, LOCK_UN);
+        fclose($fp);
+
+        return true;
     }
 }

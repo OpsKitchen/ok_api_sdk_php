@@ -11,13 +11,13 @@ namespace OK\ApiSdk;
 
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\ClientInterface;
-use OK\ApiSdk\Di\Logger\LoggerInterface;
+use OK\ApiSdk\Di\Logger\Logger;
 use OK\ApiSdk\Model\ApiResult;
 
 class Client
 {
     /**
-     * @var LoggerInterface
+     * @var Logger
      */
     static public $defaultLogger;
 
@@ -41,7 +41,7 @@ class Client
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @param Logger $logger
      */
     static public function setDefaultLogger($logger)
     {
@@ -70,12 +70,14 @@ class Client
 
         if ($response->getStatusCode() !== 200) {
             //server side error
+            self::$defaultLogger->error("Failed to do http communication: " . json_encode($response->getHeaders()));
             return null;
         }
 
         $jsonObj = json_decode($response->getBody());
         if (json_last_error()) {
             //response body is invalid json
+            self::$defaultLogger->error("Reponse body is not valid json: " . $response->getBody());
             return null;
         }
         return $jsonObj;
