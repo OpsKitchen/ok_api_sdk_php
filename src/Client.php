@@ -11,8 +11,6 @@ namespace OK\ApiSdk;
 
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\GuzzleException;
-use InvalidArgumentException;
 use OK\ApiSdk\Di\Logger\Logger;
 use OK\ApiSdk\Model\ApiResult;
 
@@ -62,53 +60,52 @@ class Client
      * @param $api
      * @param $version
      * @param mixed $params
-     *
      * @return ApiResult
+     *
+     * @throws \Exception
      */
     public function callApi($api, $version, $params = null)
     {
-        try {
-            $request = $this->requestBuilder->build($api, $version, $params);
-        } catch (InvalidArgumentException $e) {
-            //invalid argument
-            self::$defaultLogger->error("Invalid argument: ". $e->getMessage());
-            return $this->errorMessage($e->getMessage());
-        }
-        try {
-            $response = $this->httpClient->send($request);
-        } catch (GuzzleException $e) {
-            //failed connect
-            self::$defaultLogger->error("Failed connect: " . $e->getMessage());
-            return $this->errorMessage($e->getMessage());
-        }
+        $request = $this->requestBuilder->build($api, $version, $params);
+        $response = $this->httpClient->send($request);
+        self::$defaultLogger->debug("Response body: " . $response->getBody());
 
         if ($response->getStatusCode() !== 200) {
             //server side error
-            self::$defaultLogger->error("Failed to do http communication: " . $response->getReasonPhrase());
-            return $this->errorMessage($response->getReasonPhrase());
+            $message = "Failed to do http communication: " . $response->getReasonPhrase();
+            self::$defaultLogger->error($message);
+            throw new \Exception($message);
         }
-
-        self::$defaultLogger->debug("Response body: " . $response->getBody());
 
         $jsonObj = json_decode($response->getBody());
         if (json_last_error()) {
             //response body is invalid json
-            $message = "Reponse body is not valid json.";
+            $message = "Response body is not valid json.";
             self::$defaultLogger->error($message);
-            return $this->errorMessage($message);
+            throw new \Exception($message);
         }
-        return $jsonObj;
-    }
 
-    /**
-     * @param string $message
-     * @return ApiResult
-     */
-    private function errorMessage($message)
-    {
-        $returnData = new ApiResult();
-        $returnData->setSuccess(false);
-        $returnData->setErrorMessage($message);
-        return $returnData;
+        $apiResult = new ApiResult();
+        if (!isset($jsonObj->success)) {
+            $message = "Response body does not contain field: success.";
+            self::$defaultLogger->error($message);
+            throw new \Exception($message);
+        } else if ($jsonObj->success === false) {
+            if (!isset($jsonObj->errorCode)) {
+                $message = "Response body does not contain field: errorCode.";
+                self::$defaultLogger->error($message);
+                throw new \Exception($message);
+            }
+            $apiResult->setErrorCode($jsonObj->errorCode);
+            if (isset($jsonObj->errorMessage)) {
+                $apiResult->setErrorMessage($jsonObj->errorMessage);
+            }
+        }
+        $apiResult->setSuccess($jsonObj->success);
+        if (isset($jsonObj->data)) {
+            $apiResult->setData($jsonObj->data);
+        }
+
+        return $apiResult;
     }
 }
