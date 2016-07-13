@@ -11,6 +11,8 @@ namespace OK\ApiSdk;
 
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\GuzzleException;
+use InvalidArgumentException;
 use OK\ApiSdk\Di\Logger\Logger;
 use OK\ApiSdk\Model\ApiResult;
 
@@ -65,21 +67,48 @@ class Client
      */
     public function callApi($api, $version, $params = null)
     {
-        $request = $this->requestBuilder->build($api, $version, $params);
-        $response = $this->httpClient->send($request);
+        try {
+            $request = $this->requestBuilder->build($api, $version, $params);
+        } catch (InvalidArgumentException $e) {
+            //invalid argument
+            self::$defaultLogger->error("Invalid argument: ". $e->getMessage());
+            return $this->errorMessage($e->getMessage());
+        }
+        try {
+            $response = $this->httpClient->send($request);
+        } catch (GuzzleException $e) {
+            //failed connect
+            self::$defaultLogger->error("Failed connect: " . $e->getMessage());
+            return $this->errorMessage($e->getMessage());
+        }
 
         if ($response->getStatusCode() !== 200) {
             //server side error
-            self::$defaultLogger->error("Failed to do http communication: " . json_encode($response->getHeaders()));
-            return null;
+            self::$defaultLogger->error("Failed to do http communication: " . $response->getReasonPhrase());
+            return $this->errorMessage($response->getReasonPhrase());
         }
+
+        self::$defaultLogger->debug("Response body: " . $response->getBody());
 
         $jsonObj = json_decode($response->getBody());
         if (json_last_error()) {
             //response body is invalid json
-            self::$defaultLogger->error("Reponse body is not valid json: " . $response->getBody());
-            return null;
+            $message = "Reponse body is not valid json.";
+            self::$defaultLogger->error($message);
+            return $this->errorMessage($message);
         }
         return $jsonObj;
+    }
+
+    /**
+     * @param string $message
+     * @return ApiResult
+     */
+    private function errorMessage($message)
+    {
+        $returnData = new ApiResult();
+        $returnData->setSuccess(false);
+        $returnData->setErrorMessage($message);
+        return $returnData;
     }
 }
