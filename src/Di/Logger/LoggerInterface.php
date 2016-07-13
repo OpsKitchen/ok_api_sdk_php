@@ -11,17 +11,17 @@ namespace OK\ApiSdk\Di\Logger;
 
 interface LoggerInterface
 {
-    const DEBUG = "DEBUG";
+    const DEBUG = 7;
 
-    const INFO = "INFO";
+    const INFO = 6;
 
-    const WARN = "WARN";
+    const WARN = 4;
 
-    const ERROR = "ERROR";
+    const ERROR = 3;
 
-    const FATAL = "FATAL";
+    const FATAL = 1;
 
-    const PANIC = "PANIC";
+    const PANIC = 0;
 
     /**
      * @param string $content

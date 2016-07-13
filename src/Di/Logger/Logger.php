@@ -13,16 +13,23 @@ use OK\ApiSdk\Constant;
 class Logger implements LoggerInterface
 {
     /**
+     * @var int
+     */
+    protected $level;
+
+    /**
      * @var string
      */
     protected $logPath;
 
     /**
      * Logger constructor.
+     * @param int $level
      * @param string $logPath
      */
-    public function __construct($logPath = Constant::DEFAULT_LOG_PATH)
+    public function __construct($level = LoggerInterface::DEBUG, $logPath = Constant::DEFAULT_LOG_PATH)
     {
+        $this->level = $level;
         $this->logPath = $logPath;
     }
 
@@ -31,7 +38,9 @@ class Logger implements LoggerInterface
      */
     public function debug($content)
     {
-        $this->writeLog($content, LoggerInterface::DEBUG);
+        if ($this->level >= LoggerInterface::DEBUG) {
+            $this->writeLog($content, LoggerInterface::DEBUG);
+        }
     }
 
     /**
@@ -39,7 +48,9 @@ class Logger implements LoggerInterface
      */
     public function info($content)
     {
-        $this->writeLog($content, LoggerInterface::INFO);
+        if ($this->level >= LoggerInterface::INFO) {
+            $this->writeLog($content, "INFO");
+        }
     }
 
     /**
@@ -47,7 +58,9 @@ class Logger implements LoggerInterface
      */
     public function warn($content)
     {
-        $this->writeLog($content, LoggerInterface::WARN);
+        if ($this->level >= LoggerInterface::WARN) {
+            $this->writeLog($content, "WARN");
+        }
     }
 
     /**
@@ -55,7 +68,9 @@ class Logger implements LoggerInterface
      */
     public function error($content)
     {
-        $this->writeLog($content, LoggerInterface::ERROR);
+        if ($this->level >= LoggerInterface::ERROR) {
+            $this->writeLog($content, "ERROR");
+        }
     }
 
     /**
@@ -63,8 +78,10 @@ class Logger implements LoggerInterface
      */
     public function fatal($content)
     {
-        $this->writeLog($content, LoggerInterface::FATAL);
-        exit;
+        if ($this->level >= LoggerInterface::FATAL) {
+            $this->writeLog($content, "FATAL");
+            exit;
+        }
     }
 
     /**
@@ -72,20 +89,22 @@ class Logger implements LoggerInterface
      */
     public function panic($content)
     {
-        $this->writeLog($content, LoggerInterface::PANIC);
+        if ($this->level >= LoggerInterface::PANIC) {
+            $this->writeLog($content, "PANIC");
+        }
     }
 
     /**
      * @param string $content
-     * @param string $level
+     * @param string $levelName
      * @return bool
      */
-    final protected function writeLog($content, $level = LoggerInterface::DEBUG)
+    final protected function writeLog($content, $levelName)
     {
         if (!$fp = fopen($this->logPath, 'a')) {
             return false;
         }
-        $message = "[".$level."]: ".$content."\n";
+        $message = "[".$levelName."]: ".$content."\n";
         flock($fp, LOCK_EX);
         fwrite($fp, $message);
         flock($fp, LOCK_UN);
