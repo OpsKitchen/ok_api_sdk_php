@@ -74,7 +74,7 @@ class Client
             //server side error
             $message = "Failed to do http communication: " . $response->getReasonPhrase();
             self::$defaultLogger->error($message);
-            throw new \Exception($message);
+            throw new \RuntimeException($message);
         }
 
         $jsonObj = json_decode($response->getBody());
@@ -82,19 +82,19 @@ class Client
             //response body is invalid json
             $message = "Response body is not valid json.";
             self::$defaultLogger->error($message);
-            throw new \Exception($message);
+            throw new \UnexpectedValueException($message);
         }
 
         $apiResult = new ApiResult();
         if (!isset($jsonObj->success)) {
             $message = "Response body does not contain field: success.";
             self::$defaultLogger->error($message);
-            throw new \Exception($message);
+            throw new \UnexpectedValueException($message);
         } else if ($jsonObj->success === false) {
             if (!isset($jsonObj->errorCode)) {
                 $message = "Response body does not contain field: errorCode.";
                 self::$defaultLogger->error($message);
-                throw new \Exception($message);
+                throw new \UnexpectedValueException($message);
             }
             $apiResult->setErrorCode($jsonObj->errorCode);
             if (isset($jsonObj->errorMessage)) {
