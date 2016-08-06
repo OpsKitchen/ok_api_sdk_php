@@ -11,7 +11,6 @@ namespace OK\ApiSdk;
 
 class Constant
 {
-    const DEFAULT_GATEWAY_PATH = "/gw/json";
     const DEFAULT_HTTP_METHOD = "POST";
 
     const APP_KEY_FIELD_NAME = "OA-App-Key";

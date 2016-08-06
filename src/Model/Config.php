@@ -27,7 +27,7 @@ class Config
     /**
      * @var string
      */
-    protected $gatewayPath = Constant::DEFAULT_GATEWAY_PATH;
+    protected $gatewayPath;
 
     /**
      * @var string
