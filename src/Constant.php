@@ -11,8 +11,6 @@ namespace OK\ApiSdk;
 
 class Constant
 {
-    const DEFAULT_HTTP_METHOD = "POST";
-
     const APP_KEY_FIELD_NAME = "OA-App-Key";
     const APP_VERSION_FIELD_NAME = "OA-App-Version";
     const APP_MARKET_ID_FIELD_NAME = "OA-App-Market-ID";
