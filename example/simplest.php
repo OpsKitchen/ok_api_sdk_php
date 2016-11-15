@@ -23,8 +23,10 @@ function main()
 
     try {
         $response = $client->callApi("ops.meta.os.list", "1.0");
+        /** @noinspection ForgottenDebugOutputInspection */
         print_r($response);
     } catch (\Exception $e) {
+        /** @noinspection ForgottenDebugOutputInspection */
         print_r($e);
     }
 }
