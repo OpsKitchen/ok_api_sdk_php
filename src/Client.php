@@ -32,12 +32,18 @@ class Client
     public $requestBuilder;
 
     /**
+     * @var bool
+     */
+    public $debug;
+
+    /**
      * Client constructor.
      */
-    public function __construct()
+    public function __construct($debug = false)
     {
         $this->httpClient = new HttpClient();
         $this->requestBuilder = new RequestBuilder();
+        $this->debug = $debug;
     }
 
     /**
@@ -87,9 +93,11 @@ class Client
 
         $apiResult = new ApiResult();
         if (!isset($jsonObj->success)) {
-            $message = "Response body does not contain field: success.";
-            self::$defaultLogger->error($message);
-            throw new \UnexpectedValueException($message);
+            if (!$this->debug) {
+                $message = "Response body does not contain field: success.";
+                self::$defaultLogger->error($message);
+                throw new \UnexpectedValueException($message);
+            }
         } else if ($jsonObj->success === false) {
             if (!isset($jsonObj->errorCode)) {
                 $message = "Response body does not contain field: errorCode.";
